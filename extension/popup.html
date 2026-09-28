@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <svg viewBox="0 0 107 127" class="bm"><path d="M0 126.5 L0 0 L106.6 0 L106.6 126.3 L53.3 81.4 Z"/></svg>
+      <div><b>M512 Viral</b><small id="who">أضف المقطع وحلّله</small></div>
+    </div>
+    <button id="gear" class="icon" title="الإعدادات"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></button>
+  </header>
+
+  <main>
+    <!-- الإعدادات -->
+    <section id="vSettings" class="hidden">
+      <h2>اربط الإضافة بحسابك</h2>
+      <p class="muted">تجد البيانات في المنصة: صفحة "إضافة كروم".</p>
+      <label>رابط المنصة<input id="site" dir="ltr" placeholder="https://m512-viral.vercel.app"></label>
+      <label>رمزك الخاص<input id="token" dir="ltr" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></label>
+      <div id="setMsg"></div>
+      <button id="saveSet" class="primary">احفظ واختبر</button>
+    </section>
+
+    <!-- ليس صفحة مقطع -->
+    <section id="vNone" class="hidden center">
+      <div class="ico"><svg viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="3"/><path d="m10.5 9.5 4 2.5-4 2.5z"/></svg></div>
+      <h2>افتح صفحة مقطع</h2>
+      <p class="muted">افتح مقطعاً على تيك توك أو إنستغرام ريلز أو يوتيوب، ثم اضغط زر الإضافة من جديد.</p>
+      <div class="links"><a data-go="https://www.tiktok.com/explore">تيك توك</a><a data-go="https://www.instagram.com/reels/">ريلز</a><a data-go="https://www.youtube.com/shorts">شورتس</a></div>
+      <button id="openSite" class="ghost">افتح المنصة</button>
+    </section>
+
+    <!-- إضافة -->
+    <section id="vAdd" class="hidden">
+      <div class="preview">
+        <img id="pThumb" alt="">
+        <div class="pinfo">
+          <span class="plat" id="pPlat"></span>
+          <b id="pTitle"></b>
+          <div class="stats" id="pStats"></div>
+        </div>
+      </div>
+      <div class="two">
+        <label>نوع المحتوى<select id="cat"><option value="">بدون تصنيف</option></select></label>
+        <label>اللغة<select id="lang"><option value="">تلقائي</option><option value="ar">عربي</option><option value="en">أجنبي</option></select></label>
+      </div>
+      <div id="addMsg"></div>
+      <button id="addBtn" class="primary">أضف وحلّل</button>
+      <button id="copyLink" class="ghost">انسخ الرابط فقط</button>
+    </section>
+
+    <!-- النتيجة -->
+    <section id="vResult" class="hidden">
+      <div class="score"><div class="big" id="rScore"></div><div><b id="rTier"></b><small>درجة الانتشار من 100</small></div></div>
+      <p id="rSummary"></p>
+      <ol id="rReasons"></ol>
+      <div id="rWarn"></div>
+      <button id="rOpen" class="primary">افتح التحليل الكامل</button>
+      <button id="rCopy" class="ghost">انسخ لكتابة السكريبت في Claude</button>
+    </section>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>
