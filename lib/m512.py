@@ -331,8 +331,14 @@ def yt_call(db, endpoint, params, units):
             pass
         if reason in ("quotaExceeded", "dailyLimitExceeded"):
             raise ApiError("انتهت حصة يوتيوب المجانية لليوم. تتجدد تلقائياً بعد منتصف الليل بتوقيت المحيط الهادئ", 429, "yt_quota")
-        if reason in ("keyInvalid", "badRequest") or e.status in (400, 403):
-            raise ApiError("مفتاح يوتيوب غير صالح أو الخدمة غير مفعّلة: " + (err.get("message") or ""), 400, "yt_key")
+        msg = re.sub(r"<[^>]+>", "", err.get("message") or "")
+        if reason in ("keyInvalid", "keyExpired", "accessNotConfigured", "ipRefererBlocked", "forbidden") or \
+                "API key" in msg or "has not been used" in msg:
+            raise ApiError("مفتاح يوتيوب غير صالح أو خدمة YouTube Data API غير مفعّلة: " + msg, 400, "yt_key")
+        if "regionCode" in msg or reason in ("invalidRegionCode", "unsupportedRegionCode"):
+            raise ApiError("يوتيوب لا يدعم هذه الدولة في هذا النوع من البحث. اختر دولة أخرى", 400, "yt_region")
+        if e.status in (400, 403, 404):
+            raise ApiError("يوتيوب رفض الطلب: " + msg, 400, "yt_bad_request")
         raise ApiError("خطأ من يوتيوب: " + (err.get("message") or str(e.status)), 502, "yt_error")
     db.bump("youtube", units)
     return data

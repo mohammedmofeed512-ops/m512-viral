@@ -447,6 +447,7 @@ async function discover(root, platform) {
         });
         searchVideos = r.videos;
         drawTabs(); drawResults();
+        if (r.notice) toast(r.notice, 'ok', 7000);
         toast(r.cached ? `نتائج محفوظة من بحث سابق (بدون استهلاك حصة) · ${r.videos.length} مقطع` : `وجدنا ${r.videos.length} مقطع · استهلك ${r.units} وحدة`);
       } catch (err) {
         searchVideos = null; current = 'library'; drawTabs();

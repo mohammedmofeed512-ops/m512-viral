@@ -43,6 +43,7 @@ def search(h):
             return {"videos": vids, "cached": True, "cached_at": cached["created_at"], "units": 0}
 
     units = 0
+    notice = None
     if mode == "trending":
         cat_id = None
         if category:
@@ -51,12 +52,31 @@ def search(h):
         params = {"part": "id", "chart": "mostPopular", "regionCode": region or "SA", "maxResults": 50}
         if cat_id:
             params["videoCategoryId"] = cat_id
-        try:
-            data = yt_call(db, "videos", params, 1)
-        except ApiError:
-            params.pop("videoCategoryId", None)
-            data = yt_call(db, "videos", params, 1)
-        units += 1
+        data = None
+        # بعض الدول لا تملك قائمة "رائج" في يوتيوب (مثل فلسطين)، وبعض التصنيفات غير متاحة في كل دولة
+        attempts = [dict(params)]
+        if cat_id:
+            attempts.append({k: v for k, v in params.items() if k != "videoCategoryId"})
+        for fallback in ("SA", "US"):
+            if params["regionCode"] != fallback:
+                attempts.append({**params, "regionCode": fallback})
+                if cat_id:
+                    attempts.append({k: v for k, v in {**params, "regionCode": fallback}.items() if k != "videoCategoryId"})
+        last_err = None
+        for a in attempts:
+            try:
+                data = yt_call(db, "videos", a, 1)
+                units += 1
+                if a["regionCode"] != params["regionCode"]:
+                    notice = f"يوتيوب لا يوفر قائمة الرائج لهذه الدولة، فعرضنا الرائج في {a['regionCode']}"
+                if data.get("items"):
+                    break
+            except ApiError as e:
+                if e.code in ("yt_quota", "yt_key", "missing_youtube_key"):
+                    raise
+                last_err = e
+        if data is None:
+            raise last_err or ApiError("تعذّر جلب الرائج")
         ids = [it["id"] for it in data.get("items", [])]
     else:
         params = {"part": "id", "type": "video", "q": q, "order": order, "maxResults": results,
@@ -98,7 +118,7 @@ def search(h):
                                        "duration": duration, "order": order, "category": category},
                             "video_ids": [r["id"] for r in saved], "created_by": prof["id"],
                             "created_at": now_iso()}], "cache_key")
-    return {"videos": saved, "cached": False, "units": units, "found": len(ids)}
+    return {"videos": saved, "cached": False, "units": units, "found": len(ids), "notice": notice}
 
 
 class handler(JsonHandler):
