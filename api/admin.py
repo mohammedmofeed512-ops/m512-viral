@@ -1,6 +1,6 @@
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from lib.m512 import JsonHandler, DB, ApiError, authenticate, yt_call, gemini_generate, SUPABASE_URL, SUPABASE_SERVICE_KEY, http_json, HttpFailure
+from lib.m512 import JsonHandler, DB, ApiError, authenticate, yt_call, gemini_generate, SUPABASE_URL, http_json, HttpFailure, service_headers
 
 
 def admin(h):
@@ -37,7 +37,7 @@ def admin(h):
             raise ApiError("لا يمكنك حذف حسابك")
         try:
             http_json("DELETE", f"{SUPABASE_URL}/auth/v1/admin/users/{uid}", None,
-                      {"apikey": SUPABASE_SERVICE_KEY, "Authorization": "Bearer " + SUPABASE_SERVICE_KEY})
+                      service_headers())
         except HttpFailure as e:
             raise ApiError(f"تعذّر الحذف ({e.status})")
         return {"ok": True}
@@ -50,7 +50,7 @@ def admin(h):
             u = http_json("POST", f"{SUPABASE_URL}/auth/v1/admin/users",
                           {"email": email, "password": password, "email_confirm": True,
                            "user_metadata": {"full_name": b.get("full_name") or email.split("@")[0]}},
-                          {"apikey": SUPABASE_SERVICE_KEY, "Authorization": "Bearer " + SUPABASE_SERVICE_KEY})
+                          service_headers())
         except HttpFailure as e:
             msg = (e.payload or {}).get("msg") or (e.payload or {}).get("message") or ""
             raise ApiError("تعذّر إنشاء الحساب: " + ("البريد مستخدم مسبقاً" if "already" in msg else msg))

@@ -83,12 +83,20 @@ class HttpFailure(Exception):
 
 
 # ------------------------------------------------------------------ Supabase (service role)
+def service_headers():
+    """المفاتيح الجديدة (sb_secret_...) تُرسل في apikey فقط، والقديمة (JWT) في الاثنين."""
+    h = {"apikey": SUPABASE_SERVICE_KEY}
+    if not SUPABASE_SERVICE_KEY.startswith("sb_"):
+        h["Authorization"] = "Bearer " + SUPABASE_SERVICE_KEY
+    return h
+
+
 class DB:
     def __init__(self):
         if not (SUPABASE_URL and SUPABASE_SERVICE_KEY):
             raise ApiError("الخادم غير مُعدّ: أضف متغيرات Supabase في Vercel", 500, "not_configured")
         self.base = SUPABASE_URL + "/rest/v1"
-        self.h = {"apikey": SUPABASE_SERVICE_KEY, "Authorization": "Bearer " + SUPABASE_SERVICE_KEY}
+        self.h = service_headers()
         self._settings = None
 
     def req(self, method, table, params=None, body=None, prefer=None):
