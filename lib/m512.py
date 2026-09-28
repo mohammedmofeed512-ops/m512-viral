@@ -34,7 +34,8 @@ class ApiError(Exception):
 # ------------------------------------------------------------------ HTTP
 def http_json(method, url, body=None, headers=None, timeout=30):
     data = None
-    h = {"User-Agent": UA, "Accept": "application/json"}
+    # لا نستخدم هوية متصفح هنا: Supabase يرفض المفتاح السري إذا بدا الطلب قادماً من متصفح
+    h = {"User-Agent": "M512-Server/1.0 (python-urllib)", "Accept": "application/json"}
     if headers:
         h.update(headers)
     if body is not None:
