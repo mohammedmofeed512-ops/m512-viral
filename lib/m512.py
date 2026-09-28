@@ -517,6 +517,7 @@ def analysis_prompt(v, mode):
 
 العنوان: {v.get('title') or ''}
 الوصف: {(v.get('description') or '')[:1200]}
+{"ملاحظة: الفيديو طويل، وتشاهد أول 5 دقائق منه فقط؛ ركّز على الافتتاحية والبنية، وانسخ النص المنطوق لهذه الدقائق." if mode == "video" and (v.get("duration_sec") or 0) > 300 else ""}
 {metrics}
 
 اكتب تحليلاً عملياً مختصراً باللغة العربية الفصحى المبسطة يشرح لماذا انتشر هذا المقطع، بحيث يتعلم منه الطالب ويصنع مقطعاً مشابهاً:
@@ -544,12 +545,13 @@ def gemini_generate(db, parts):
     models = [db.setting("gemini_model", "gemini-3.5-flash"), db.setting("gemini_fallback_model", "gemini-3.5-flash-lite")]
     body = {
         "contents": [{"role": "user", "parts": parts}],
-        "generationConfig": {"temperature": 0.4, "responseMimeType": "application/json", "responseSchema": ANALYSIS_SCHEMA},
+        "generationConfig": {"temperature": 0.4, "responseMimeType": "application/json", "responseSchema": ANALYSIS_SCHEMA,
+                             "mediaResolution": "MEDIA_RESOLUTION_LOW"},
     }
     last = None
     for model in [m for m in models if m]:
         try:
-            data = http_json("POST", f"{GEMINI}/{model}:generateContent?key={urllib.parse.quote(key)}", body, timeout=110)
+            data = http_json("POST", f"{GEMINI}/{model}:generateContent?key={urllib.parse.quote(key)}", body, timeout=240)
             db.bump("gemini", 1)
             text = "".join(p.get("text", "") for p in data["candidates"][0]["content"]["parts"])
             result = json.loads(text)
@@ -574,7 +576,11 @@ def analyze_video(db, v):
     prompt_mode = None
     parts = []
     if v["platform"] in ("youtube", "shorts"):
-        parts = [{"file_data": {"file_uri": f"https://www.youtube.com/watch?v={v['external_id']}"}}]
+        part = {"file_data": {"file_uri": f"https://www.youtube.com/watch?v={v['external_id']}"}}
+        # الفيديو الطويل: نحلل أول 5 دقائق بمعدل إطار كل ثانيتين حتى يبقى التحليل سريعاً ومجانياً
+        if (v.get("duration_sec") or 0) > 300:
+            part["video_metadata"] = {"start_offset": "0s", "end_offset": "300s", "fps": 0.5}
+        parts = [part]
         prompt_mode = "video"
         try:
             return _run(db, v, parts, prompt_mode)

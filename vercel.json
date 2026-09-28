@@ -1,11 +1,23 @@
 {
   "functions": {
-    "api/*.py": { "maxDuration": 60, "includeFiles": "lib/**" }
+    "api/*.py": {
+      "maxDuration": 300,
+      "includeFiles": "lib/**"
+    }
   },
   "headers": [
-    { "source": "/(.*)", "headers": [
-      { "key": "X-Content-Type-Options", "value": "nosniff" },
-      { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
-    ]}
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    }
   ]
 }

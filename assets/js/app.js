@@ -549,12 +549,12 @@ async function openVideo(id) {
   if (!v) { o.querySelector('.sheet').innerHTML = emptyState('info', 'المقطع غير موجود', 'ربما حُذف من المكتبة.'); return; }
   renderSheet(o, v);
 
-  if (v.analysis_status !== 'done' && S.settings.auto_analyze_on_open !== false && v.analysis_status !== 'running') runAnalysis(o, v, false);
+  if (v.analysis_status !== 'done' && v.analysis_status !== 'failed' && S.settings.auto_analyze_on_open !== false) runAnalysis(o, v, false);
 }
 
 async function runAnalysis(o, v, force) {
   const box = $('#analysis', o);
-  if (box) box.innerHTML = `<div class="analyzing"><div class="pulse"></div><h3 style="margin:0 0 4px">نحلل المقطع الآن…</h3><p class="muted" style="margin:0">نشاهد الفيديو ونستخرج الهوك وأسباب الانتشار والنص المنطوق. يستغرق عادة 15 إلى 60 ثانية.</p></div>`;
+  if (box) box.innerHTML = `<div class="analyzing"><div class="pulse"></div><h3 style="margin:0 0 4px">نحلل المقطع الآن…</h3><p class="muted" style="margin:0">نشاهد الفيديو ونستخرج الهوك وأسباب الانتشار والنص المنطوق. يستغرق عادة من 20 ثانية إلى دقيقتين.</p></div>`;
   try {
     const r = await D.analyze(v.id, force);
     Object.assign(v, r.video);
